@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed } from "vue";
-import { TodoStatus } from "@/types";
+import { TodoStatus, type Todo } from "@/types";
 import useTodos from "@/store/useTodos";
 import Draggable from "vuedraggable";
 import CreateTodo from "./CreateTodo.vue";
@@ -13,25 +13,23 @@ interface Props {
 }
 const props = defineProps<Props>();
 
-const { getTodosByStatus, deleteTodo, updateTodo } = useTodos();
+const { getTodosByStatus, deleteTodo, updateTodo, addNewTodo } = useTodos();
 const todoList = getTodosByStatus(props.status);
 console.log(props.status);
 const groupLabel = {
     [TodoStatus.Pending]: "Pending",
-    // [TodoStatus.InProgress]: "In Progress",
     [TodoStatus.Completed]: "Completed"
 };
 
 const onDraggableChange = (payload: any) => {
-console.log("payload", payload);
-if(payload?.added?.element) {
-    updateTodo(payload?.added?.element, props.status)
-}
+    if (payload?.added?.element) {
+        updateTodo(payload?.added?.element, props.status);
+    }
 };
-const onCheckboxClicked = (payload: any) => {
-console.log(payload);
-
-
+const onCheckboxClicked = (todo: Todo) => {
+    deleteTodo(todo);
+    updateTodo(todo, todo.completed ? TodoStatus.Completed : TodoStatus.Pending);
+    addNewTodo(todo);
 };
 </script>
 
@@ -42,23 +40,21 @@ console.log(payload);
         <Draggable class="draggable" :list="todoList" group="todos" itemKey="id" @change="onDraggableChange">
             <template #item="{ element: todo }">
                 <li>
-                    {{todo.title}}
-                    {{todo.status}}
-                    {{todo.completed}}
+                    {{ todo.title }}
                     <span class="delete-icon" @click="deleteTodo(todo)">x</span>
                     <div>
                         <span class="todo-description">{{ todo.description }}</span>
                     </div>
                     <div>
-                    <input type="checkbox" id="checkbox" v-model="todo.completed" @change="onCheckboxClicked"/>
-                    <!-- <input type="checkbox" id="checkbox" v-model="todo.completed" :true-value="TodoStatus.Completed" :false-value="TodoStatus.Pending" @change="onCheckboxClicked"/> -->
-                    <label for="checkbox">Completed?</label>
-                </div>
+                        <input type="checkbox" id="checkbox" v-model="todo.completed" @change="onCheckboxClicked(todo)"
+                            :value="todo.completed" />
+                        <label for="checkbox">Completed?</label>
+                    </div>
                 </li>
             </template>
         </Draggable>
 
-        <CreateTodo :status="props.status" :completed="false"/>
+        <!-- <CreateTodo :status="props.status" :completed="false"/> -->
     </div>
 </template>
 
@@ -79,7 +75,8 @@ console.log(payload);
     cursor: grab;
     margin-bottom: 10px;
 }
-.header{
+
+.header {
     display: flex;
     justify-content: center;
     border: 2px;
@@ -92,7 +89,7 @@ console.log(payload);
     min-height: 200px;
 }
 
-.delete-icon{
+.delete-icon {
     float: right;
     cursor: pointer;
 }

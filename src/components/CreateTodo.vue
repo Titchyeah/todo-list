@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import useTodos from "@/store/useTodos";
-import {  TodoStatus, type Todo } from "@/types";
+import { TodoStatus, type Todo } from "@/types";
 import { reactive, ref } from "vue";
 
 interface Props {
@@ -11,7 +11,7 @@ interface Props {
 const props = defineProps<Props>();
 const shouldDisplayForm = ref(false);
 
-const {addNewTodo} = useTodos();
+const { addNewTodo } = useTodos();
 
 const newTodo = reactive<Omit<Todo, "id">>({
     title: "",
@@ -28,8 +28,9 @@ const resetForm = () => {
 
 const handleOnSubmit = () => {
     addNewTodo({
-        id:Math.random() * 100000000,
-        ...newTodo})
+        id: Math.random() * 100000000,
+        ...newTodo
+    });
 
     resetForm();
 }
